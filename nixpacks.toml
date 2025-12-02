@@ -1,0 +1,9 @@
+[phps]
+version = "8.2"
+extensions = ["ctype", "curl", "dom", "fileinfo", "filter", "hash", "mbstring", "openssl", "pcre", "pdo", "session", "tokenizer", "xml"]
+
+[build]
+buildCommand = "composer install --optimize-autoloader --no-interaction && php artisan config:cache && php artisan view:cache"
+
+[start]
+command = "php artisan serve --host=0.0.0.0 --port=8080"
