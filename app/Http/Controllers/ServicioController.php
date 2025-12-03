@@ -65,7 +65,7 @@ class ServicioController extends Controller
             $imagen = $request->file('imagen');
             $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
             
-            // USAR /tmp EN LUGAR DE /app/public
+            // Ruta en /tmp
             $rutaTemporal = '/tmp/images/servicios/';
             
             // Crear carpeta si no existe
@@ -76,15 +76,36 @@ class ServicioController extends Controller
             // Mover a /tmp
             $imagen->move($rutaTemporal, $nombreImagen);
             
-            // Guardar en BD como ruta temporal
-            $data['imagen_url'] = '/tmp/images/servicios/' . $nombreImagen;
+            // Guardar ruta completa en BD
+            $data['imagen_url'] = $rutaTemporal . $nombreImagen;
             
-            // OPCIÓN: Guardar como base64 desde /tmp
-            $data['imagen_base64'] = base64_encode(file_get_contents($rutaTemporal . $nombreImagen));
+            // OPCIONAL: También guardar el nombre para referencia
+            $data['imagen_nombre'] = $nombreImagen;
         }
 
-        Servicio::create($data);
+        // Crear servicio
+        $servicio = Servicio::create($data);
+        
+        // DEBUG: Ver qué se guardó
+        \Log::info('Servicio creado', [
+            'id' => $servicio->id,
+            'nombre' => $servicio->nombre,
+            'imagen_url' => $servicio->imagen_url,
+            'imagen_existe' => file_exists($servicio->imagen_url)
+        ]);
+
         return redirect()->route('admin.servicios.index')->with('success', 'Servicio creado correctamente');
+    }
+
+    // En tu ServicioController, agrega este método auxiliar
+    private function getImageContent($path)
+    {
+        if (file_exists($path)) {
+            $imageData = file_get_contents($path);
+            $mimeType = mime_content_type($path);
+            return "data:$mimeType;base64," . base64_encode($imageData);
+        }
+        return null;
     }
     public function edit($id)
     {

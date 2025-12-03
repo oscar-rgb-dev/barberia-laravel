@@ -18,32 +18,6 @@
     </div>
 </section>
 
-<!-- Filtros por Tipo de Servicio -->
-<section class="py-4 bg-light">
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <div class="text-center">
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-dark filter-btn active" data-filter="all">
-                            Todos los Servicios
-                        </button>
-                        <button type="button" class="btn btn-outline-dark filter-btn" data-filter="Corte">
-                            Cortes de Cabello
-                        </button>
-                        <button type="button" class="btn btn-outline-dark filter-btn" data-filter="Barba">
-                            Arreglo de Barba
-                        </button>
-                        <button type="button" class="btn btn-outline-dark filter-btn" data-filter="Completo">
-                            Servicios Completos
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
 <!-- Grid de Servicios -->
 <section class="py-5">
     <div class="container">
@@ -53,15 +27,51 @@
                 <div class="card servicio-card h-100 border-0 shadow-hover">
                     <div class="card-img-container position-relative">
                         <!-- En la tabla o donde muestres los servicios -->
-                            @if($servicio->imagen_url)
-                                <img src="{{ asset($servicio->imagen_url) }}" 
+                          @if($servicio->imagen_url && str_starts_with($servicio->imagen_url, '/tmp/'))
+                            <!-- Imagen desde /tmp -->
+                            @php
+                                try {
+                                    $imageData = file_exists($servicio->imagen_url) 
+                                        ? base64_encode(file_get_contents($servicio->imagen_url))
+                                        : null;
+                                } catch (\Exception $e) {
+                                    $imageData = null;
+                                }
+                            @endphp
+                            
+                            @if($imageData)
+                                <img src="data:image/jpeg;base64,{{ $imageData }}" 
                                     alt="{{ $servicio->nombre }}"
-                                    style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;">
+                                    class="servicio-imagen"
+                                    style="height: 200px; width: 100%; object-fit: cover; border-top-left-radius: 8px; border-top-right-radius: 8px;">
                             @else
                                 <img src="{{ asset('images/default-service.jpg') }}" 
-                                    alt="Sin imagen"
-                                    style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;">
+                                    alt="{{ $servicio->nombre }}"
+                                    class="servicio-imagen"
+                                    style="height: 200px; width: 100%; object-fit: cover; border-top-left-radius: 8px; border-top-right-radius: 8px;">
                             @endif
+                            
+                        @elseif($servicio->imagen_url && str_starts_with($servicio->imagen_url, 'data:image'))
+                            <!-- Imagen Base64 directa -->
+                            <img src="{{ $servicio->imagen_url }}" 
+                                alt="{{ $servicio->nombre }}"
+                                class="servicio-imagen"
+                                style="height: 200px; width: 100%; object-fit: cover; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+                            
+                        @elseif($servicio->imagen_url)
+                            <!-- URL normal -->
+                            <img src="{{ asset($servicio->imagen_url) }}" 
+                                alt="{{ $servicio->nombre }}"
+                                class="servicio-imagen"
+                                style="height: 200px; width: 100%; object-fit: cover; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+                            
+                        @else
+                            <!-- Sin imagen -->
+                            <img src="{{ asset('images/default-service.jpg') }}" 
+                                alt="Sin imagen"
+                                class="servicio-imagen"
+                                style="height: 200px; width: 100%; object-fit: cover; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+                        @endif
                         
                         <!-- Badge de tipo -->
                         <div class="position-absolute top-0 end-0 m-2">

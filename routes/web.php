@@ -33,6 +33,19 @@ Route::get('/citas/horarios-disponibles', [CitaController::class, 'horariosDispo
 // Rutas de autenticación
 Auth::routes();
 
+// En routes/web.php
+Route::get('/debug-images', function() {
+    $rutaTmp = '/tmp/images/servicios/';
+    
+    return response()->json([
+        'tmp_path' => $rutaTmp,
+        'tmp_exists' => file_exists($rutaTmp),
+        'files_in_tmp' => file_exists($rutaTmp) ? scandir($rutaTmp) : [],
+        'servicios_db' => \App\Models\Servicio::select(['id', 'nombre', 'imagen_url'])->get()->toArray(),
+        'last_servicio' => \App\Models\Servicio::latest()->first()
+    ]);
+});
+
 // ============================
 // RUTAS PARA CLIENTES
 // ============================
