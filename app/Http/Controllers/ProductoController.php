@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Producto;
-use Illuminate\Support\Facades\File;
 
 class ProductoController extends Controller
 {
@@ -34,29 +33,28 @@ class ProductoController extends Controller
             'descripcion' => 'nullable|string',
             'costo' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
-            'imagen' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'imagen' => 'required|image|mimes:jpeg,png,jpg,gif|max:1024', // Reducido a 1MB
         ]);
 
         $data = $request->all();
 
-        // GUARDAR IMAGEN EN /tmp
+        // CONVERTIR IMAGEN A BASE64 Y GUARDAR EN BD
         if ($request->hasFile('imagen')) {
             $imagen = $request->file('imagen');
-            $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
             
-            // Ruta en /tmp
-            $rutaTemporal = '/tmp/images/productos/';
-            
-            // Crear carpeta si no existe
-            if (!file_exists($rutaTemporal)) {
-                mkdir($rutaTemporal, 0755, true);
+            // Validar tamaño
+            if ($imagen->getSize() > 1048576) { // 1MB en bytes
+                return back()->withInput()->withErrors([
+                    'imagen' => 'La imagen no debe superar 1MB'
+                ]);
             }
             
-            // Mover a /tmp
-            $imagen->move($rutaTemporal, $nombreImagen);
+            // Convertir a Base64
+            $base64 = base64_encode(file_get_contents($imagen));
+            $mime = $imagen->getMimeType();
             
-            // Guardar ruta completa en BD
-            $data['imagen'] = $rutaTemporal . $nombreImagen;
+            // Guardar como Base64 en la BD
+            $data['imagen'] = "data:$mime;base64,$base64";
         }
 
         // Crear producto
@@ -81,7 +79,7 @@ class ProductoController extends Controller
             'descripcion' => 'nullable|string',
             'costo' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
-            'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:1024',
         ]);
 
         $data = [
@@ -93,22 +91,21 @@ class ProductoController extends Controller
 
         // Manejar la carga de nueva imagen
         if ($request->hasFile('imagen')) {
-            // Eliminar imagen anterior si existe
-            if ($producto->imagen && file_exists($producto->imagen)) {
-                unlink($producto->imagen);
-            }
-            
-            // Guardar nueva imagen en /tmp
             $imagen = $request->file('imagen');
-            $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
-            $rutaTemporal = '/tmp/images/productos/';
             
-            if (!file_exists($rutaTemporal)) {
-                mkdir($rutaTemporal, 0755, true);
+            // Validar tamaño
+            if ($imagen->getSize() > 1048576) { // 1MB en bytes
+                return back()->withInput()->withErrors([
+                    'imagen' => 'La imagen no debe superar 1MB'
+                ]);
             }
             
-            $imagen->move($rutaTemporal, $nombreImagen);
-            $data['imagen'] = $rutaTemporal . $nombreImagen;
+            // Convertir a Base64
+            $base64 = base64_encode(file_get_contents($imagen));
+            $mime = $imagen->getMimeType();
+            
+            // Guardar como Base64 en la BD
+            $data['imagen'] = "data:$mime;base64,$base64";
         }
 
         $producto->update($data);
@@ -121,10 +118,8 @@ class ProductoController extends Controller
     {
         $producto = Producto::findOrFail($id);
         
-        // Eliminar imagen si existe
-        if ($producto->imagen && file_exists($producto->imagen)) {
-            unlink($producto->imagen);
-        }
+        // Con Base64 NO necesitamos eliminar archivos físicos
+        // La imagen está dentro de la BD como texto
         
         $producto->delete();
 

@@ -52,16 +52,20 @@
             <div class="col-xl-3 col-lg-4 col-md-6 mb-4 producto-item" data-category="{{ $producto->categoria ?? 'Cuidado' }}">
                 <div class="card producto-card h-100 border-0 shadow-hover">
                     <div class="card-img-container position-relative">
-                      @if($producto->imagen)
-                            @php
-                                $imageSrc = App\Helpers\ImageHelper::getImageSrc($producto->imagen);
-                            @endphp
-                            
-                            <img src="{{ $imageSrc }}" 
+                      @if($producto->imagen && str_starts_with($producto->imagen, 'data:image'))
+                            <!-- Imagen Base64 -->
+                            <img src="{{ $producto->imagen }}" 
+                                class="card-img-top producto-imagen" 
+                                alt="{{ $producto->nombre }}"
+                                style="height: 200px; object-fit: cover;">
+                        @elseif($producto->imagen)
+                            <!-- Para compatibilidad con rutas antiguas -->
+                            <img src="{{ asset($producto->imagen) }}" 
                                 class="card-img-top producto-imagen" 
                                 alt="{{ $producto->nombre }}"
                                 style="height: 200px; object-fit: cover;">
                         @else
+                            <!-- Sin imagen -->
                             <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" 
                                 style="height: 200px;">
                                 <i class="fas fa-box fa-3x text-light"></i>
@@ -128,16 +132,20 @@
                         <div class="modal-body">
                             <div class="row">
                                 <div class="col-md-6">
-                                    @if($producto->imagen)
-                                        @php
-                                            $imageSrc = App\Helpers\ImageHelper::getImageSrc($producto->imagen);
-                                        @endphp
-                                        
-                                        <img src="{{ $imageSrc }}" 
+                                   @if($producto->imagen && str_starts_with($producto->imagen, 'data:image'))
+                                        <!-- Imagen Base64 -->
+                                        <img src="{{ $producto->imagen }}" 
+                                            class="card-img-top producto-imagen" 
+                                            alt="{{ $producto->nombre }}"
+                                            style="height: 200px; object-fit: cover;">
+                                    @elseif($producto->imagen)
+                                        <!-- Para compatibilidad con rutas antiguas -->
+                                        <img src="{{ asset($producto->imagen) }}" 
                                             class="card-img-top producto-imagen" 
                                             alt="{{ $producto->nombre }}"
                                             style="height: 200px; object-fit: cover;">
                                     @else
+                                        <!-- Sin imagen -->
                                         <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" 
                                             style="height: 200px;">
                                             <i class="fas fa-box fa-3x text-light"></i>

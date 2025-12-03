@@ -44,16 +44,20 @@
                                 @forelse($productos as $producto)
                                 <tr>
                                     <td>
-                                        @if($producto->imagen)
-                                            @php
-                                                $imageSrc = App\Helpers\ImageHelper::getImageSrc($producto->imagen);
-                                            @endphp
-                                            
-                                            <img src="{{ $imageSrc }}"
+                                        @if($producto->imagen && str_starts_with($producto->imagen, 'data:image'))
+                                            <!-- Imagen Base64 -->
+                                            <img src="{{ $producto->imagen }}"
+                                                class="rounded"
+                                                alt="{{ $producto->nombre }}"
+                                                style="height: 50px; width: 50px; object-fit: cover;">
+                                        @elseif($producto->imagen)
+                                            <!-- Para compatibilidad -->
+                                            <img src="{{ asset($producto->imagen) }}"
                                                 class="rounded"
                                                 alt="{{ $producto->nombre }}"
                                                 style="height: 50px; width: 50px; object-fit: cover;">
                                         @else
+                                            <!-- Sin imagen -->
                                             <div class="bg-secondary rounded d-flex align-items-center justify-content-center"
                                                 style="width: 50px; height: 50px;">
                                                 <i class="fas fa-box text-white"></i>
