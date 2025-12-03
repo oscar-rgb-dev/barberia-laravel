@@ -52,17 +52,16 @@
             <div class="col-xl-3 col-lg-4 col-md-6 mb-4 servicio-item" data-category="{{ $servicio->tipo_servicio }}">
                 <div class="card servicio-card h-100 border-0 shadow-hover">
                     <div class="card-img-container position-relative">
-                        @if($servicio->imagen_url)
-                            <img src="{{ asset('storage/' . $servicio->imagen_url) }}" 
-                                 class="card-img-top servicio-imagen" 
-                                 alt="{{ $servicio->nombre }}"
-                                 style="height: 200px; object-fit: cover;">
-                        @else
-                            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" 
-                                 style="height: 200px;">
-                                <i class="fas fa-cut fa-3x text-light"></i>
-                            </div>
-                        @endif
+                        <!-- En la tabla o donde muestres los servicios -->
+                            @if($servicio->imagen_url)
+                                <img src="{{ asset($servicio->imagen_url) }}" 
+                                    alt="{{ $servicio->nombre }}"
+                                    style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;">
+                            @else
+                                <img src="{{ asset('images/default-service.jpg') }}" 
+                                    alt="Sin imagen"
+                                    style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;">
+                            @endif
                         
                         <!-- Badge de tipo -->
                         <div class="position-absolute top-0 end-0 m-2">

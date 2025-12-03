@@ -4,17 +4,28 @@ namespace App\Http\Controllers;
 
 use App\Models\Servicio;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 
 class ServicioController extends Controller
 {
+    /**
+     * Asegurar que las carpetas existan
+     */
+    public function __construct()
+    {
+        // Crear carpeta si no existe
+        $carpetaServicios = public_path('images/servicios');
+        if (!File::exists($carpetaServicios)) {
+            File::makeDirectory($carpetaServicios, 0755, true);
+        }
+    }
+
     /**
      * Vista PÚBLICA - Tienda para clientes
      */
     public function index()
     {
-        // Quita el where('activo', true) ya que no existe esa columna
-        $servicios = Servicio::all(); // Muestra TODOS los servicios
+        $servicios = Servicio::all();
         return view('servicios.tienda', compact('servicios'));
     }
 
@@ -45,15 +56,21 @@ class ServicioController extends Controller
             'tipo_servicio' => 'required|string|max:255',
             'costo' => 'required|numeric|min:0',
             'descripcion' => 'required|string',
-            'imagen' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048' // Cambié a required
+            'imagen' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
         $data = $request->all();
 
-        // Manejar la subida de la imagen
+        // GUARDAR EN PUBLIC/IMAGES/SERVICIOS (NO EN STORAGE)
         if ($request->hasFile('imagen')) {
-            $imagePath = $request->file('imagen')->store('servicios', 'public');
-            $data['imagen_url'] = $imagePath;
+            $imagen = $request->file('imagen');
+            $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
+            
+            // Mover a public/images/servicios
+            $imagen->move(public_path('images/servicios'), $nombreImagen);
+            
+            // Guardar ruta relativa
+            $data['imagen_url'] = 'images/servicios/' . $nombreImagen;
         }
 
         Servicio::create($data);
@@ -66,9 +83,6 @@ class ServicioController extends Controller
         $servicio = Servicio::findOrFail($id);
         return view('servicios.edit', compact('servicio'));
     }
-
-
-    // ... otros métodos del CRUD ...
 
     /**
      * Update the specified resource in storage.
@@ -90,20 +104,31 @@ class ServicioController extends Controller
         // Manejar la subida de la nueva imagen
         if ($request->hasFile('imagen')) {
             // Eliminar imagen anterior si existe
-            if ($servicio->imagen_url) {
-                Storage::disk('public')->delete($servicio->imagen_url);
+            if ($servicio->imagen_url && file_exists(public_path($servicio->imagen_url))) {
+                unlink(public_path($servicio->imagen_url));
             }
-            $imagePath = $request->file('imagen')->store('servicios', 'public');
-            $data['imagen_url'] = $imagePath;
+            
+            // Guardar nueva imagen
+            $imagen = $request->file('imagen');
+            $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
+            $imagen->move(public_path('images/servicios'), $nombreImagen);
+            $data['imagen_url'] = 'images/servicios/' . $nombreImagen;
         }
 
         $servicio->update($data);
 
         return redirect()->route('admin.servicios.index')->with('success', 'Servicio actualizado correctamente');
     }
+
     public function destroy($id)
     {
         $servicio = Servicio::findOrFail($id);
+        
+        // Eliminar imagen si existe
+        if ($servicio->imagen_url && file_exists(public_path($servicio->imagen_url))) {
+            unlink(public_path($servicio->imagen_url));
+        }
+        
         $servicio->delete();
 
         return redirect()->route('servicios.index')->with('success', 'Servicio eliminado correctamente');
