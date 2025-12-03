@@ -52,18 +52,21 @@
             <div class="col-xl-3 col-lg-4 col-md-6 mb-4 producto-item" data-category="{{ $producto->categoria ?? 'Cuidado' }}">
                 <div class="card producto-card h-100 border-0 shadow-hover">
                     <div class="card-img-container position-relative">
-                        @if($producto->imagen)
-                            <img src="{{ asset('storage/' . $producto->imagen) }}" 
-                                 class="card-img-top producto-imagen" 
-                                 alt="{{ $producto->nombre }}"
-                                 style="height: 200px; object-fit: cover;">
+                      @if($producto->imagen)
+                            @php
+                                $imageSrc = App\Helpers\ImageHelper::getImageSrc($producto->imagen);
+                            @endphp
+                            
+                            <img src="{{ $imageSrc }}" 
+                                class="card-img-top producto-imagen" 
+                                alt="{{ $producto->nombre }}"
+                                style="height: 200px; object-fit: cover;">
                         @else
                             <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" 
-                                 style="height: 200px;">
+                                style="height: 200px;">
                                 <i class="fas fa-box fa-3x text-light"></i>
                             </div>
                         @endif
-                        
                         <!-- Badge de stock -->
                         <div class="position-absolute top-0 start-0 m-2">
                             @if($producto->stock > 10)
@@ -126,12 +129,17 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     @if($producto->imagen)
-                                        <img src="{{ asset('storage/' . $producto->imagen) }}" 
-                                             class="img-fluid rounded" 
-                                             alt="{{ $producto->nombre }}">
+                                        @php
+                                            $imageSrc = App\Helpers\ImageHelper::getImageSrc($producto->imagen);
+                                        @endphp
+                                        
+                                        <img src="{{ $imageSrc }}" 
+                                            class="card-img-top producto-imagen" 
+                                            alt="{{ $producto->nombre }}"
+                                            style="height: 200px; object-fit: cover;">
                                     @else
-                                        <div class="bg-secondary d-flex align-items-center justify-content-center rounded" 
-                                             style="height: 200px;">
+                                        <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" 
+                                            style="height: 200px;">
                                             <i class="fas fa-box fa-3x text-light"></i>
                                         </div>
                                     @endif

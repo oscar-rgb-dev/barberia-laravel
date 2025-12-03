@@ -45,13 +45,17 @@
                                 <tr>
                                     <td>
                                         @if($producto->imagen)
-                                            <img src="{{ asset('storage/' . $producto->imagen) }}"
-                                                 class="rounded"
-                                                 alt="{{ $producto->nombre }}"
-                                                 style="height: 50px; width: 50px; object-fit: cover;">
+                                            @php
+                                                $imageSrc = App\Helpers\ImageHelper::getImageSrc($producto->imagen);
+                                            @endphp
+                                            
+                                            <img src="{{ $imageSrc }}"
+                                                class="rounded"
+                                                alt="{{ $producto->nombre }}"
+                                                style="height: 50px; width: 50px; object-fit: cover;">
                                         @else
                                             <div class="bg-secondary rounded d-flex align-items-center justify-content-center"
-                                                 style="width: 50px; height: 50px;">
+                                                style="width: 50px; height: 50px;">
                                                 <i class="fas fa-box text-white"></i>
                                             </div>
                                         @endif
