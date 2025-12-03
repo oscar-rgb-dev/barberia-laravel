@@ -50,7 +50,19 @@ class ServicioController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
+    {   
+
+        $carpeta = public_path('images/servicios');
+        if (!file_exists($carpeta)) {
+            mkdir($carpeta, 0755, true);
+            chmod($carpeta, 0755);
+        }
+
+        // Verificar permisos
+        $permisos = substr(sprintf('%o', fileperms($carpeta)), -4);
+        \Log::info('Permisos carpeta', ['carpeta' => $carpeta, 'permisos' => $permisos]);
+        \Log::info('Inicio store', ['request' => $request->all()]);
+        
         $request->validate([
             'nombre' => 'required|string|max:255',
             'tipo_servicio' => 'required|string|max:255',
@@ -59,23 +71,55 @@ class ServicioController extends Controller
             'imagen' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
+        \Log::info('Validación pasada');
+        
         $data = $request->all();
+        \Log::info('Datos recibidos', $data);
 
-        // GUARDAR EN PUBLIC/IMAGES/SERVICIOS (NO EN STORAGE)
-        if ($request->hasFile('imagen')) {
-            $imagen = $request->file('imagen');
-            $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
+        try {
+            // GUARDAR EN PUBLIC/IMAGES/SERVICIOS (NO EN STORAGE)
+            if ($request->hasFile('imagen')) {
+                \Log::info('Tiene archivo de imagen');
+                
+                $imagen = $request->file('imagen');
+                $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
+                \Log::info('Nombre imagen generado', ['nombre' => $nombreImagen]);
+                
+                // Verificar si la carpeta existe
+                $carpetaDestino = public_path('images/servicios');
+                \Log::info('Carpeta destino', ['path' => $carpetaDestino, 'exists' => file_exists($carpetaDestino)]);
+                
+                // Crear carpeta si no existe
+                if (!file_exists($carpetaDestino)) {
+                    mkdir($carpetaDestino, 0755, true);
+                    \Log::info('Carpeta creada');
+                }
+                
+                // Mover a public/images/servicios
+                $imagen->move($carpetaDestino, $nombreImagen);
+                \Log::info('Imagen movida');
+                
+                // Guardar ruta relativa
+                $data['imagen_url'] = 'images/servicios/' . $nombreImagen;
+                \Log::info('URL guardada', ['url' => $data['imagen_url']]);
+            }
+
+            \Log::info('Creando servicio en BD', $data);
+            Servicio::create($data);
+            \Log::info('Servicio creado exitosamente');
+
+            return redirect()->route('admin.servicios.index')->with('success', 'Servicio creado correctamente');
             
-            // Mover a public/images/servicios
-            $imagen->move(public_path('images/servicios'), $nombreImagen);
+        } catch (\Exception $e) {
+            \Log::error('Error al crear servicio', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             
-            // Guardar ruta relativa
-            $data['imagen_url'] = 'images/servicios/' . $nombreImagen;
+            return back()->withInput()->withErrors(['error' => 'Error al crear servicio: ' . $e->getMessage()]);
         }
-
-        Servicio::create($data);
-
-        return redirect()->route('admin.servicios.index')->with('success', 'Servicio creado correctamente');
     }
 
     public function edit($id)
