@@ -54,16 +54,20 @@
                     <div class="card-img-container position-relative">
                       @if($producto->imagen && str_starts_with($producto->imagen, 'data:image'))
                             <!-- Imagen Base64 -->
-                            <img src="{{ $producto->imagen }}" 
-                            class="card-img-top producto-imagen" 
-                            alt="{{ $producto->nombre }}"
-                            style="width: 50%; height: auto; object-fit: contain; display: block; margin: 0 auto;">
+                            <div class="text-center py-3" style="min-height: 180px; display: flex; align-items: center; justify-content: center; background: linear-gradient(to bottom, #f8f9fa, #e9ecef);">
+                                <img src="{{ $producto->imagen }}" 
+                                    class="img-fluid" 
+                                    alt="{{ $producto->nombre }}"
+                                    style="max-height: 160px; width: auto; object-fit: contain;">
+                            </div>
                         @elseif($producto->imagen)
                             <!-- Para compatibilidad con rutas antiguas -->
-                            <img src="{{ $producto->imagen }}" 
-                                class="card-img-top producto-imagen" 
-                                alt="{{ $producto->nombre }}"
-                                style="width: 50%; height: auto; object-fit: contain; display: block; margin: 0 auto;">
+                            <div class="text-center py-3" style="min-height: 180px; display: flex; align-items: center; justify-content: center; background: linear-gradient(to bottom, #f8f9fa, #e9ecef);">
+                                <img src="{{ $producto->imagen }}" 
+                                    class="img-fluid" 
+                                    alt="{{ $producto->nombre }}"
+                                    style="max-height: 160px; width: auto; object-fit: contain;">
+                            </div>
                         @else
                             <!-- Sin imagen -->
                             <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" 
@@ -134,16 +138,20 @@
                                 <div class="col-md-6">
                                    @if($producto->imagen && str_starts_with($producto->imagen, 'data:image'))
                                         <!-- Imagen Base64 -->
-                                        <img src="{{ $producto->imagen }}" 
-                                            class="card-img-top producto-imagen" 
-                                            alt="{{ $producto->nombre }}"
-                                            style="height: 200px; object-fit: cover;">
+                                        <div class="text-center py-3" style="min-height: 180px; display: flex; align-items: center; justify-content: center; background: linear-gradient(to bottom, #f8f9fa, #e9ecef);">
+                                            <img src="{{ $producto->imagen }}" 
+                                                class="img-fluid" 
+                                                alt="{{ $producto->nombre }}"
+                                                style="max-height: 160px; width: auto; object-fit: contain;">
+                                        </div>
                                     @elseif($producto->imagen)
                                         <!-- Para compatibilidad con rutas antiguas -->
-                                        <img src="{{ asset($producto->imagen) }}" 
-                                            class="card-img-top producto-imagen" 
-                                            alt="{{ $producto->nombre }}"
-                                            style="height: 200px; object-fit: cover;">
+                                        <div class="text-center py-3" style="min-height: 180px; display: flex; align-items: center; justify-content: center; background: linear-gradient(to bottom, #f8f9fa, #e9ecef);">
+                                            <img src="{{ $producto->imagen }}" 
+                                                class="img-fluid" 
+                                                alt="{{ $producto->nombre }}"
+                                                style="max-height: 160px; width: auto; object-fit: contain;">
+                                        </div>
                                     @else
                                         <!-- Sin imagen -->
                                         <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" 
