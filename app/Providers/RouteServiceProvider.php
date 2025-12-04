@@ -2,31 +2,45 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
 
-class AppServiceProvider extends ServiceProvider
+class RouteServiceProvider extends ServiceProvider
 {
     /**
-     * Register any application services.
+     * The path to the "home" route for your application.
      */
-    public function register(): void
+    public const HOME = '/home';
+
+    /**
+     * Define your route model bindings, pattern filters, etc.
+     */
+    public function boot(): void
     {
-        //
+        $this->configureRateLimiting();
+
+        $this->routes(function () {
+            // 1. RUTAS API - SIN CSRF
+            Route::middleware('api')
+                ->prefix('api')
+                ->group(base_path('routes/api.php'));
+
+            // 2. RUTAS WEB - CON CSRF
+            Route::middleware('web')
+                ->group(base_path('routes/web.php'));
+        });
     }
 
     /**
-     * Bootstrap any application services.
+     * Configure the rate limiters for the application.
      */
-    public function boot()
-{
-    $this->routes(function () {
-        // Esto ya debería estar
-        Route::middleware('api')
-             ->prefix('api')
-             ->group(base_path('routes/api.php'));
-
-        Route::middleware('web')
-             ->group(base_path('routes/web.php'));
-    });
-}
+    protected function configureRateLimiting(): void
+    {
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        });
+    }
 }

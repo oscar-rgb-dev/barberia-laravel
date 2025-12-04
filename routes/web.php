@@ -144,3 +144,27 @@ Route::middleware(['auth', 'admin'])->group(function () {
 // API SIN SEGURIDAD - PARA TRABAJO ESCOLAR
 // ====================================================
 
+Route::get('/check-api-routes', function() {
+    // Verifica si las rutas API están cargadas
+    $routeCollection = Route::getRoutes();
+    $apiRoutes = [];
+    
+    foreach ($routeCollection->getRoutes() as $route) {
+        $uri = $route->uri();
+        if (strpos($uri, 'api/') === 0) {
+            $apiRoutes[] = [
+                'uri' => $uri,
+                'methods' => $route->methods(),
+                'name' => $route->getName(),
+            ];
+        }
+    }
+    
+    return response()->json([
+        'api_routes_loaded' => !empty($apiRoutes),
+        'count' => count($apiRoutes),
+        'routes' => $apiRoutes,
+        'api_file_exists' => file_exists(base_path('routes/api.php')),
+        'route_service_provider' => class_exists('App\Providers\RouteServiceProvider')
+    ]);
+});
