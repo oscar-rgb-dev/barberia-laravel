@@ -14,11 +14,18 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        
-        // ✅ FORZAR CARGA DE RUTAS API AQUÍ
+        // ✅ FORZAR CARGA DE RUTAS API - VERSIÓN CORRECTA
         Route::prefix('api')
-            ->middleware('api')  // Middleware API, NO 'web'
-            ->namespace($this->namespace)
+            ->middleware('api')
             ->group(base_path('routes/api.php'));
+        
+        // También carga rutas API manualmente en web para asegurar
+        Route::prefix('api')
+            ->middleware('web')
+            ->group(function() {
+                Route::get('/test-web', function() {
+                    return response()->json(['from' => 'web middleware']);
+                });
+            });
     }
 }
