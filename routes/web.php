@@ -19,6 +19,11 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BarberoController; // <-- Asegúrate de tener esta
 use App\Http\Controllers\BarberoCitaController;
 use Illuminate\Http\Request; // <-- AÑADE ESTA LÍNEA
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ServicioController as ApiServicioController;
+use App\Http\Controllers\Api\ProductoController as ApiProductoController;
+use App\Http\Controllers\Api\CitaController as ApiCitaController;
+
 
 // Ruta principal
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -165,25 +170,25 @@ Route::prefix('api')->group(function () {
     });
     
     // AUTH ROUTES
-    Route::post('/register', [App\Http\Controllers\Api\AuthController::class, 'register']);
-    Route::post('/login', [App\Http\Controllers\Api\AuthController::class, 'login']);
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
     
     // PUBLIC ROUTES
-    Route::get('/servicios', [App\Http\Controllers\Api\ServicioController::class, 'index']);
-    Route::get('/servicios/{id}', [App\Http\Controllers\Api\ServicioController::class, 'show']);
-    Route::get('/productos', [App\Http\Controllers\Api\ProductoController::class, 'index']);
-    Route::get('/productos/{id}', [App\Http\Controllers\Api\ProductoController::class, 'show']);
+    Route::get('/servicios', [ApiServicioController::class, 'index']);
+    Route::get('/servicios/{id}', [ApiServicioController::class, 'show']);
+    Route::get('/productos', [ApiProductoController::class, 'index']);
+    Route::get('/productos/{id}', [ApiProductoController::class, 'show']);
     
-    // PROTECTED ROUTES (con token)
-    Route::middleware('auth:sanctum')->group(function () {
+    // PROTECTED ROUTES (con token) - COMENTA TEMPORALMENTE
+    // Route::middleware('auth:sanctum')->group(function () {
         // Auth
-        Route::post('/logout', [App\Http\Controllers\Api\AuthController::class, 'logout']);
+        Route::post('/logout', [AuthController::class, 'logout']);
         
         // Citas
-        Route::apiResource('citas', App\Http\Controllers\Api\CitaController::class);
+        Route::apiResource('citas', ApiCitaController::class);
         
         // Clientes (solo admin)
-        Route::apiResource('clientes', App\Http\Controllers\Api\ClienteController::class);
+        Route::apiResource('clientes', ClienteController::class);
         
         // User profile
         Route::get('/user', function (Request $request) {
@@ -192,5 +197,5 @@ Route::prefix('api')->group(function () {
                 'user' => $request->user()
             ]);
         });
-    });
+    // });
 });
