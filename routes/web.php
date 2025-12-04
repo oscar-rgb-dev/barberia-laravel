@@ -136,3 +136,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
 // API Routes
 Route::apiResource('clientes', ClienteController::class);
+Route::prefix('api')->group(function () {
+    require base_path('routes/api.php');
+});
