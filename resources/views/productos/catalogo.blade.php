@@ -57,13 +57,13 @@
                             <img src="{{ $producto->imagen }}" 
                             class="card-img-top producto-imagen" 
                             alt="{{ $producto->nombre }}"
-                            style="width: 140%; height: auto; object-fit: contain;">
+                            style="width: 50%; height: auto; object-fit: contain;">
                         @elseif($producto->imagen)
                             <!-- Para compatibilidad con rutas antiguas -->
                             <img src="{{ $producto->imagen }}" 
                             class="card-img-top producto-imagen" 
                             alt="{{ $producto->nombre }}"
-                            style="width: 140%; height: auto; object-fit: contain;">
+                            style="width: 50%; height: auto; object-fit: contain;">
                         @else
                             <!-- Sin imagen -->
                             <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" 
