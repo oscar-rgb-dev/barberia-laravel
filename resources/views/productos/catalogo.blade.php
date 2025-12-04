@@ -106,15 +106,6 @@
                             
                             <!-- Botones de acción -->
                             <div class="d-grid gap-2">
-                                @if($producto->stock > 0)
-                                    <button class="btn btn-gold btn-comprar" data-producto-id="{{ $producto->id }}">
-                                        <i class="fas fa-shopping-cart me-2"></i>Agregar al Carrito
-                                    </button>
-                                @else
-                                    <button class="btn btn-outline-secondary" disabled>
-                                        <i class="fas fa-times me-2"></i>Producto Agotado
-                                    </button>
-                                @endif
                                 
                                 <button class="btn btn-outline-dark btn-detalles" data-bs-toggle="modal" data-bs-target="#productoModal{{ $producto->id }}">
                                     <i class="fas fa-eye me-2"></i>Ver Detalles
