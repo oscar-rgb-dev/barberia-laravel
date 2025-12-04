@@ -141,61 +141,31 @@ Route::middleware(['auth', 'admin'])->group(function () {
 });
 
 // API Routes
-// ====================================================
-// API COMPLETA PARA APP ANDROID
-// ====================================================
-
+// API Routes
 Route::prefix('api')->group(function () {
     
     // Health Check
-    Route::get('/', function () {
-        return response()->json([
-            'app' => 'Barberia API',
-            'version' => '1.0',
-            'status' => 'online',
-            'endpoints' => [
-                'POST /api/register' => 'Registrar usuario',
-                'POST /api/login' => 'Iniciar sesión',
-                'POST /api/logout' => 'Cerrar sesión (token)',
-                'GET /api/citas' => 'Ver mis citas (token)',
-                'POST /api/citas' => 'Crear cita (token)',
-                'GET /api/citas/{id}' => 'Ver cita específica (token)',
-                'PUT /api/citas/{id}' => 'Actualizar cita (token)',
-                'DELETE /api/citas/{id}' => 'Cancelar cita (token)',
-                'GET /api/servicios' => 'Ver servicios disponibles',
-                'GET /api/productos' => 'Ver productos',
-                'GET /api/clientes' => 'Ver clientes (admin)'
-            ]
-        ]);
-    });
     
-    // AUTH ROUTES
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
+    // AUTH ROUTES (PÚBLICAS por ahora)
+    Route::post('/register', [App\Http\Controllers\Api\AuthController::class, 'register']);
+    Route::post('/login', [App\Http\Controllers\Api\AuthController::class, 'login']);
+    Route::post('/logout', [App\Http\Controllers\Api\AuthController::class, 'logout']); // ← Ahora pública
     
     // PUBLIC ROUTES
-    Route::get('/servicios', [ApiServicioController::class, 'index']);
-    Route::get('/servicios/{id}', [ApiServicioController::class, 'show']);
-    Route::get('/productos', [ApiProductoController::class, 'index']);
-    Route::get('/productos/{id}', [ApiProductoController::class, 'show']);
+    Route::get('/servicios', [App\Http\Controllers\Api\ServicioController::class, 'index']);
+    Route::get('/servicios/{id}', [App\Http\Controllers\Api\ServicioController::class, 'show']);
+    Route::get('/productos', [App\Http\Controllers\Api\ProductoController::class, 'index']);
+    Route::get('/productos/{id}', [App\Http\Controllers\Api\ProductoController::class, 'show']);
     
-    // PROTECTED ROUTES (con token) - COMENTA TEMPORALMENTE
-    // Route::middleware('auth:sanctum')->group(function () {
-        // Auth
-        Route::post('/logout', [AuthController::class, 'logout']);
-        
-        // Citas
-        Route::apiResource('citas', ApiCitaController::class);
-        
-        // Clientes (solo admin)
-        Route::apiResource('clientes', ClienteController::class);
-        
-        // User profile
-        Route::get('/user', function (Request $request) {
-            return response()->json([
-                'success' => true,
-                'user' => $request->user()
-            ]);
-        });
-    // });
+    // RUTAS QUE DEBERÍAN SER PROTEGIDAS (pero por ahora públicas)
+    Route::apiResource('citas', App\Http\Controllers\Api\CitaController::class);
+    Route::apiResource('clientes', App\Http\Controllers\Api\ClienteController::class);
+    
+    // User profile (pública por ahora)
+    Route::get('/user', function (Request $request) {
+        return response()->json([
+            'success' => true,
+            'message' => 'Endpoint /user requiere autenticación'
+        ]);
+    });
 });
