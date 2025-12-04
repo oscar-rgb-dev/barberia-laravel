@@ -97,7 +97,7 @@ class CitaController extends Controller
 
         $cita = Cita::create([
             'user_id' => $request->user_id,
-            'servicio_id' => $request->servicio_id,
+            'servicio_id' => $request->id_servicio,
             'id_barbero' => $request->barbero_id, // CAMBIADO AQUÍ
             'fecha_hora' => $fechaHora,
             'estado' => 'pendiente',
