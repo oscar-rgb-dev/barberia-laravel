@@ -14,6 +14,7 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        
         // ✅ FORZAR CARGA DE RUTAS API AQUÍ
         Route::prefix('api')
             ->middleware('api')  // Middleware API, NO 'web'
