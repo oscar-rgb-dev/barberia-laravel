@@ -177,3 +177,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/reportes', [AdminController::class, 'mostrarReporteForm'])->name('admin.reportes.form');
     Route::post('/admin/reportes/generar', [AdminController::class, 'generarReportePDF'])->name('admin.reportes.generar');
 });
+
+// En routes/web.php
+Route::middleware(['auth'])->group(function () {
+    // ... otras rutas ...
+    
+    // Reportes
+    Route::get('/admin/reportes', [AdminController::class, 'mostrarReporteForm'])->name('admin.reportes.form');
+    Route::post('/admin/reportes/generar', [AdminController::class, 'generarReportePDF'])->name('admin.reportes.generar');
+    
+    // Reportes de satisfacción
+    Route::get('/admin/reportes/satisfaccion', [AdminController::class, 'mostrarReporteSatisfaccionForm'])
+        ->name('admin.reportes.satisfaccion.form');
+    Route::post('/admin/reportes/satisfaccion/generar', [AdminController::class, 'generarReporteSatisfaccionPDF'])
+        ->name('admin.reportes.satisfaccion.generar');
+});

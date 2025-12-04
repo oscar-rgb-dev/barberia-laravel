@@ -238,4 +238,185 @@ class AdminController extends Controller
         
         return $barberos;
     }
+
+     public function mostrarReporteSatisfaccionForm()
+    {
+        if (!auth()->user()->isAdmin()) {
+            abort(403, 'No tienes permisos para acceder al panel administrativo.');
+        }
+
+        $barberos = Empleado::all();
+        
+        return view('admin.reportes.satisfaccion', compact('barberos'));
+    }
+
+    /**
+     * Generar reporte de satisfacción en PDF
+     */
+    public function generarReporteSatisfaccionPDF(Request $request)
+    {
+        if (!auth()->user()->isAdmin()) {
+            abort(403, 'No tienes permisos para acceder al panel administrativo.');
+        }
+
+        // Validar los parámetros
+        $request->validate([
+            'tipo' => 'required|in:dia,semana,mes,año,personalizado',
+            'fecha_inicio' => 'required_if:tipo,personalizado|date',
+            'fecha_fin' => 'required_if:tipo,personalizado|date|after_or_equal:fecha_inicio',
+            'barbero_id' => 'nullable|exists:empleados,id',
+        ]);
+
+        // Determinar las fechas según el tipo
+        $fechas = $this->determinarRangoFechas($request);
+        $fechaInicio = $fechas['inicio'];
+        $fechaFin = $fechas['fin'];
+
+        // Consultar las citas completadas y calificadas
+        $query = Cita::with(['servicio', 'barbero', 'user'])
+            ->where('estado', 'completada')
+            ->whereNotNull('calificacion')
+            ->whereBetween('fecha_hora', [$fechaInicio, $fechaFin]);
+
+        // Filtrar por barbero si se seleccionó
+        if ($request->filled('barbero_id')) {
+            $query->where('id_barbero', $request->barbero_id);
+        }
+
+        $citas = $query->orderBy('calificacion', 'desc')->get();
+        
+        // Calcular estadísticas
+        $estadisticas = $this->calcularEstadisticasSatisfaccion($citas);
+        $estadisticasBarberos = $this->generarEstadisticasSatisfaccionBarberos($citas);
+        
+        // Información para el PDF
+        $reporteData = [
+            'citas' => $citas,
+            'estadisticas' => $estadisticas,
+            'estadisticasBarberos' => $estadisticasBarberos,
+            'fechaInicio' => $fechaInicio,
+            'fechaFin' => $fechaFin,
+            'tipoReporte' => $request->tipo,
+            'barberoSeleccionado' => $request->filled('barbero_id') ? Empleado::find($request->barbero_id) : null,
+            'fechaGeneracion' => now(),
+        ];
+
+        // Generar el PDF
+        $pdf = PDF::loadView('admin.reportes.satisfaccion-pdf', $reporteData)
+            ->setPaper('a4', 'portrait');
+
+        // Nombre del archivo
+        $nombreArchivo = 'reporte_satisfaccion_' . Carbon::now()->format('Y_m_d_His') . '.pdf';
+
+        // Descargar el PDF
+        return $pdf->download($nombreArchivo);
+    }
+
+    /**
+     * Calcular estadísticas de satisfacción
+     */
+    private function calcularEstadisticasSatisfaccion($citas)
+    {
+        $totalCitas = $citas->count();
+        
+        if ($totalCitas === 0) {
+            return [
+                'total_citas' => 0,
+                'promedio' => 0,
+                'distribucion' => [
+                    1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0
+                ],
+                'porcentajes' => [
+                    1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0
+                ],
+                'citas_con_comentarios' => 0,
+                'citas_sin_comentarios' => 0,
+            ];
+        }
+        
+        // Calcular promedio
+        $sumaCalificaciones = $citas->sum('calificacion');
+        $promedio = $sumaCalificaciones / $totalCitas;
+        
+        // Distribución de calificaciones
+        $distribucion = [
+            1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0
+        ];
+        
+        foreach ($citas as $cita) {
+            $distribucion[$cita->calificacion]++;
+        }
+        
+        // Porcentajes
+        $porcentajes = [];
+        foreach ($distribucion as $calificacion => $cantidad) {
+            $porcentajes[$calificacion] = ($cantidad / $totalCitas) * 100;
+        }
+        
+        // Conteo de comentarios
+        $citasConComentarios = $citas->filter(function($cita) {
+            return !empty(trim($cita->comentario));
+        })->count();
+        
+        return [
+            'total_citas' => $totalCitas,
+            'promedio' => round($promedio, 2),
+            'distribucion' => $distribucion,
+            'porcentajes' => $porcentajes,
+            'citas_con_comentarios' => $citasConComentarios,
+            'citas_sin_comentarios' => $totalCitas - $citasConComentarios,
+        ];
+    }
+
+    /**
+     * Generar estadísticas de satisfacción por barbero
+     */
+    private function generarEstadisticasSatisfaccionBarberos($citas)
+    {
+        $barberos = [];
+        
+        foreach ($citas as $cita) {
+            $barberoId = $cita->id_barbero;
+            $barberoNombre = $cita->barbero->nombre ?? 'No asignado';
+            
+            if (!isset($barberos[$barberoId])) {
+                $barberos[$barberoId] = [
+                    'nombre' => $barberoNombre,
+                    'total_calificaciones' => 0,
+                    'suma_calificaciones' => 0,
+                    'promedio' => 0,
+                    'distribucion' => [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0],
+                    'comentarios' => [],
+                ];
+            }
+            
+            $barberos[$barberoId]['total_calificaciones']++;
+            $barberos[$barberoId]['suma_calificaciones'] += $cita->calificacion;
+            $barberos[$barberoId]['distribucion'][$cita->calificacion]++;
+            
+            if (!empty(trim($cita->comentario))) {
+                $barberos[$barberoId]['comentarios'][] = [
+                    'calificacion' => $cita->calificacion,
+                    'comentario' => $cita->comentario,
+                    'fecha' => $cita->calificado_en,
+                    'cliente' => $cita->user->name ?? 'Cliente',
+                ];
+            }
+        }
+        
+        // Calcular promedios
+        foreach ($barberos as &$barbero) {
+            if ($barbero['total_calificaciones'] > 0) {
+                $barbero['promedio'] = round($barbero['suma_calificaciones'] / $barbero['total_calificaciones'], 2);
+            }
+        }
+        
+        // Ordenar por promedio (descendente)
+        usort($barberos, function($a, $b) {
+            return $b['promedio'] <=> $a['promedio'];
+        });
+        
+        return $barberos;
+    }
+
 }

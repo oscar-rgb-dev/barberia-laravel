@@ -10,48 +10,63 @@ class Cita extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
-        'id_servicio',
-        'id_barbero', 
-        'fecha_hora',
-        'estado',
-        'notas',
-        'total'
+        // ... otros campos existentes
+        'calificacion',
+        'comentario',
+        'calificado_en'
     ];
 
-    // Relación con User
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
+    protected $casts = [
+        'fecha_hora' => 'datetime',
+        'calificado_en' => 'datetime',
+    ];
 
-    public function servicio()
-    {
-        return $this->belongsTo(Servicio::class, 'id_servicio');
-    }
+    // ... otros métodos existentes
 
-    public function barbero()
+    /**
+     * Obtener la calificación en estrellas
+     */
+    public function getEstrellasAttribute()
     {
-        return $this->belongsTo(Empleado::class, 'id_barbero');
-    }
-
-    // Relación muchos a muchos con productos
-    public function productos()
-    {
-        return $this->belongsToMany(Producto::class, 'cita_producto')
-                    ->withPivot('cantidad')
-                    ->withTimestamps();
-    }
-
-    // Método para calcular el total
-    public function calcularTotal()
-    {
-        $total = $this->servicio->costo;
-        
-        foreach ($this->productos as $producto) {
-            $total += $producto->costo * $producto->pivot->cantidad;
+        if (!$this->calificacion) {
+            return 'No calificado';
         }
-        
-        return $total;
+
+        $estrellas = '';
+        for ($i = 1; $i <= 5; $i++) {
+            if ($i <= $this->calificacion) {
+                $estrellas .= '★';
+            } else {
+                $estrellas .= '☆';
+            }
+        }
+        return $estrellas;
+    }
+
+    /**
+     * Obtener la descripción de la calificación
+     */
+    public function getDescripcionCalificacionAttribute()
+    {
+        if (!$this->calificacion) {
+            return 'Sin calificar';
+        }
+
+        switch ($this->calificacion) {
+            case 1: return 'Muy Malo';
+            case 2: return 'Malo';
+            case 3: return 'Regular';
+            case 4: return 'Bueno';
+            case 5: return 'Excelente';
+            default: return 'Sin calificar';
+        }
+    }
+
+    /**
+     * Verificar si la cita puede ser calificada
+     */
+    public function puedeCalificar()
+    {
+        return $this->estado === 'completada' && !$this->calificacion && $this->fecha_hora->diffInDays(now()) <= 7;
     }
 }

@@ -219,6 +219,9 @@
                         <a href="{{ route('admin.reportes.form') }}" class="btn btn-outline-danger">
                             <i class="fas fa-file-pdf"></i> Generar Reporte PDF
                         </a>
+                        <a href="{{ route('admin.reportes.satisfaccion.form') }}" class="btn btn-outline-warning">
+                            <i class="fas fa-chart-bar"></i> Reporte de Satisfacción
+                        </a>
                     </div>
                 </div>
             </div>
