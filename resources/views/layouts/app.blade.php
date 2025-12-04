@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Barbería Premium')</title>
+    <title>@yield('title', 'Loyalty Barber')</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -284,7 +284,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
-                    <h5><i class="fas fa-cut"></i> Barbería Premium</h5>
+                    <h5><i class="fas fa-cut"></i> Loyalty Barber</h5>
                     <p class="mb-0">Estilo, tradición y calidad en cada corte.</p>
                 </div>
                 <div class="col-md-6 text-md-end">
