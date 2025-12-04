@@ -76,15 +76,7 @@
                             </div>
                         @endif
                         <!-- Badge de stock -->
-                        <div class="position-absolute top-0 start-0 m-2">
-                            @if($producto->stock > 10)
-                                <span class="badge bg-success">Disponible</span>
-                            @elseif($producto->stock > 0)
-                                <span class="badge bg-warning text-dark">Últimas unidades</span>
-                            @else
-                                <span class="badge bg-danger">Agotado</span>
-                            @endif
-                        </div>
+                       
                     </div>
                     
                     <div class="card-body d-flex flex-column">
@@ -164,11 +156,7 @@
                                         </div>
                                         
                                         @if($producto->stock > 0)
-                                            <div class="d-grid gap-2">
-                                                <button class="btn btn-gold btn-comprar" data-producto-id="{{ $producto->id }}">
-                                                    <i class="fas fa-shopping-cart me-2"></i>Agregar al Carrito
-                                                </button>
-                                            </div>
+                                            
                                         @endif
                                     </div>
                                 </div>

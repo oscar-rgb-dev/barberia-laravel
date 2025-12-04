@@ -288,7 +288,7 @@
                     <p class="mb-0">Estilo, tradición y calidad en cada corte.</p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <p class="mb-0">&copy; {{ date('Y') }} Barbería Premium. Todos los derechos reservados.</p>
+                    <p class="mb-0">&copy; {{ date('Y') }} Loyalty Barber. Todos los derechos reservados.</p>
                 </div>
             </div>
         </div>
