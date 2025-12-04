@@ -19,30 +19,6 @@
 </section>
 
 <!-- Filtros por Categoría -->
-<section class="py-4 bg-light">
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <div class="text-center">
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-dark filter-btn active" data-filter="all">
-                            Todos los Productos
-                        </button>
-                        <button type="button" class="btn btn-outline-dark filter-btn" data-filter="Cuidado">
-                            Cuidado Personal
-                        </button>
-                        <button type="button" class="btn btn-outline-dark filter-btn" data-filter="Estilo">
-                            Estilización
-                        </button>
-                        <button type="button" class="btn btn-outline-dark filter-btn" data-filter="Afeitado">
-                            Afeitado
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
 
 <!-- Grid de Productos -->
 <section class="py-5">
@@ -142,23 +118,7 @@
                                             <i class="fas fa-box fa-3x text-light"></i>
                                         </div>
                                     @endif
-                                </div>
-                                <div class="col-md-6">
-                                    <h4 class="text-warning">${{ number_format($producto->costo, 0, ',', '.') }}</h4>
-                                    <p class="text-muted">{{ $producto->descripcion }}</p>
-                                    
-                                    <div class="producto-detalles">
-                                        <div class="mb-3">
-                                            <strong>Stock disponible:</strong>
-                                            <span class="badge bg-{{ $producto->stock > 0 ? 'success' : 'danger' }}">
-                                                {{ $producto->stock }} unidades
-                                            </span>
-                                        </div>
-                                        
-                                        @if($producto->stock > 0)
-                                            
-                                        @endif
-                                    </div>
+                                
                                 </div>
                             </div>
                         </div>
