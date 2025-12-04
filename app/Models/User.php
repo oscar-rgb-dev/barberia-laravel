@@ -6,9 +6,12 @@ use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Sanctum\HasApiTokens;
+
 
 class User extends Model implements AuthenticatableContract
-{
+{   
+    use HasApiTokens, HasFactory, Notifiable;
     use Notifiable, Authenticatable;
 
     protected $table = 'users';

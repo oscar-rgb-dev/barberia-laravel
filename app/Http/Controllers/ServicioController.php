@@ -4,22 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Servicio;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\File;
 
 class ServicioController extends Controller
 {
-    /**
-     * Asegurar que las carpetas existan
-     */
-    public function __construct()
-    {
-        // Crear carpeta si no existe
-        $carpetaServicios = public_path('images/servicios');
-        if (!File::exists($carpetaServicios)) {
-            File::makeDirectory($carpetaServicios, 0755, true);
-        }
-    }
-
     /**
      * Vista PÚBLICA - Tienda para clientes
      */
@@ -56,57 +43,41 @@ class ServicioController extends Controller
             'tipo_servicio' => 'required|string|max:255',
             'costo' => 'required|numeric|min:0',
             'descripcion' => 'required|string',
-            'imagen' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'imagen' => 'required|image|mimes:jpeg,png,jpg,gif|max:1024' // Reducido a 1MB
         ]);
 
         $data = $request->all();
 
+        // CONVERTIR IMAGEN A BASE64 Y GUARDAR EN BD (igual que productos)
         if ($request->hasFile('imagen')) {
             $imagen = $request->file('imagen');
-            $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
             
-            // Ruta en /tmp
-            $rutaTemporal = '/tmp/images/servicios/';
-            
-            // Crear carpeta si no existe
-            if (!file_exists($rutaTemporal)) {
-                mkdir($rutaTemporal, 0755, true);
+            // Validar tamaño
+            if ($imagen->getSize() > 1048576) { // 1MB en bytes
+                return back()->withInput()->withErrors([
+                    'imagen' => 'La imagen no debe superar 1MB'
+                ]);
             }
             
-            // Mover a /tmp
-            $imagen->move($rutaTemporal, $nombreImagen);
+            // Convertir a Base64
+            $base64 = base64_encode(file_get_contents($imagen));
+            $mime = $imagen->getMimeType();
             
-            // Guardar ruta completa en BD
-            $data['imagen_url'] = $rutaTemporal . $nombreImagen;
-            
-            // OPCIONAL: También guardar el nombre para referencia
-            $data['imagen_nombre'] = $nombreImagen;
+            // Guardar como Base64 en la BD
+            $data['imagen_url'] = "data:$mime;base64,$base64";
+            // También puedes guardarlo en otro campo si prefieres
+            $data['imagen'] = "data:$mime;base64,$base64";
         }
 
         // Crear servicio
-        $servicio = Servicio::create($data);
-        
-        // DEBUG: Ver qué se guardó
-        \Log::info('Servicio creado', [
-            'id' => $servicio->id,
-            'nombre' => $servicio->nombre,
-            'imagen_url' => $servicio->imagen_url,
-            'imagen_existe' => file_exists($servicio->imagen_url)
-        ]);
+        Servicio::create($data);
 
         return redirect()->route('admin.servicios.index')->with('success', 'Servicio creado correctamente');
     }
 
-    // En tu ServicioController, agrega este método auxiliar
-    private function getImageContent($path)
-    {
-        if (file_exists($path)) {
-            $imageData = file_get_contents($path);
-            $mimeType = mime_content_type($path);
-            return "data:$mimeType;base64," . base64_encode($imageData);
-        }
-        return null;
-    }
+    /**
+     * Show the form for editing the specified resource.
+     */
     public function edit($id)
     {
         $servicio = Servicio::findOrFail($id);
@@ -125,23 +96,29 @@ class ServicioController extends Controller
             'tipo_servicio' => 'required|string|max:255',
             'costo' => 'required|numeric|min:0',
             'descripcion' => 'required|string',
-            'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:1024'
         ]);
 
-        $data = $request->all();
+        $data = $request->only(['nombre', 'tipo_servicio', 'costo', 'descripcion']);
 
-        // Manejar la subida de la nueva imagen
+        // Manejar la subida de la nueva imagen (convertir a Base64)
         if ($request->hasFile('imagen')) {
-            // Eliminar imagen anterior si existe
-            if ($servicio->imagen_url && file_exists(public_path($servicio->imagen_url))) {
-                unlink(public_path($servicio->imagen_url));
+            $imagen = $request->file('imagen');
+            
+            // Validar tamaño
+            if ($imagen->getSize() > 1048576) { // 1MB en bytes
+                return back()->withInput()->withErrors([
+                    'imagen' => 'La imagen no debe superar 1MB'
+                ]);
             }
             
-            // Guardar nueva imagen
-            $imagen = $request->file('imagen');
-            $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
-            $imagen->move(public_path('images/servicios'), $nombreImagen);
-            $data['imagen_url'] = 'images/servicios/' . $nombreImagen;
+            // Convertir a Base64
+            $base64 = base64_encode(file_get_contents($imagen));
+            $mime = $imagen->getMimeType();
+            
+            // Guardar como Base64 en la BD
+            $data['imagen_url'] = "data:$mime;base64,$base64";
+            $data['imagen'] = "data:$mime;base64,$base64";
         }
 
         $servicio->update($data);
@@ -149,17 +126,18 @@ class ServicioController extends Controller
         return redirect()->route('admin.servicios.index')->with('success', 'Servicio actualizado correctamente');
     }
 
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy($id)
     {
         $servicio = Servicio::findOrFail($id);
         
-        // Eliminar imagen si existe
-        if ($servicio->imagen_url && file_exists(public_path($servicio->imagen_url))) {
-            unlink(public_path($servicio->imagen_url));
-        }
+        // Con Base64 NO necesitamos eliminar archivos físicos
+        // La imagen está dentro de la BD como texto
         
         $servicio->delete();
 
-        return redirect()->route('servicios.index')->with('success', 'Servicio eliminado correctamente');
+        return redirect()->route('admin.servicios.index')->with('success', 'Servicio eliminado correctamente');
     }
 }
