@@ -55,15 +55,15 @@
                       @if($producto->imagen && str_starts_with($producto->imagen, 'data:image'))
                             <!-- Imagen Base64 -->
                             <img src="{{ $producto->imagen }}" 
-                                class="card-img-top producto-imagen" 
-                                alt="{{ $producto->nombre }}"
-                                style="height: 200px; object-fit: cover;">
+                            class="card-img-top producto-imagen" 
+                            alt="{{ $producto->nombre }}"
+                            style="width: 100%; height: auto; object-fit: contain;">
                         @elseif($producto->imagen)
                             <!-- Para compatibilidad con rutas antiguas -->
-                            <img src="{{ asset($producto->imagen) }}" 
-                                class="card-img-top producto-imagen" 
-                                alt="{{ $producto->nombre }}"
-                                style="height: 200px; object-fit: cover;">
+                            <img src="{{ $producto->imagen }}" 
+                            class="card-img-top producto-imagen" 
+                            alt="{{ $producto->nombre }}"
+                            style="width: 100%; height: auto; object-fit: contain;">
                         @else
                             <!-- Sin imagen -->
                             <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" 
