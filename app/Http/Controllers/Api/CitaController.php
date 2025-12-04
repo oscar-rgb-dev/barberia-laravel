@@ -37,7 +37,7 @@ class CitaController extends Controller
                             'id' => $cita->id,
                             'servicio_id' => $cita->servicio_id,
                             'servicio_nombre' => $cita->servicio ? $cita->servicio->nombre : 'N/A',
-                            'barbero_id' => $cita->barbero_id,
+                            'barbero_id' => $cita->id_barbero, // CAMBIADO AQUÍ
                             'barbero_nombre' => $cita->barbero ? $cita->barbero->nombre : 'N/A',
                             'fecha_hora' => $cita->fecha_hora,
                             'fecha' => date('Y-m-d', strtotime($cita->fecha_hora)), // Para Android
@@ -64,7 +64,7 @@ class CitaController extends Controller
         $validator = Validator::make($request->all(), [
             'user_id' => 'required|integer|exists:users,id',
             'servicio_id' => 'required|exists:servicios,id',
-            'barbero_id' => 'required|exists:empleados,id', // Añadir esto
+            'barbero_id' => 'required|exists:empleados,id', // El parámetro sigue siendo barbero_id
             'fecha' => 'required|date',
             'hora' => 'required|date_format:H:i',
             'notas' => 'nullable|string|max:500',
@@ -80,9 +80,9 @@ class CitaController extends Controller
         // Combinar fecha y hora
         $fechaHora = $request->fecha . ' ' . $request->hora . ':00';
 
-        // Verificar disponibilidad
+        // Verificar disponibilidad - CAMBIADO: barbero_id -> id_barbero
         $citaExistente = Cita::where('fecha_hora', $fechaHora)
-                            ->where('barbero_id', $request->barbero_id)
+                            ->where('id_barbero', $request->barbero_id) // CAMBIADO AQUÍ
                             ->where('estado', '!=', 'cancelada')
                             ->first();
 
@@ -98,7 +98,7 @@ class CitaController extends Controller
         $cita = Cita::create([
             'user_id' => $request->user_id,
             'servicio_id' => $request->servicio_id,
-            'barbero_id' => $request->barbero_id,
+            'id_barbero' => $request->barbero_id, // CAMBIADO AQUÍ
             'fecha_hora' => $fechaHora,
             'estado' => 'pendiente',
             'notas' => $request->notas,
@@ -156,7 +156,7 @@ class CitaController extends Controller
         if (strlen($horaInicio) === 4) $horaInicio .= ':00';
         if (strlen($horaFin) === 4) $horaFin .= ':00';
 
-        // Generar horarios disponibles
+        // Generar horarios disponibles - CAMBIADO: barbero_id -> id_barbero
         $horariosDisponibles = $this->generarHorariosDisponibles($barbero->id, $fecha, $horaInicio, $horaFin);
 
         return response()->json([
@@ -178,8 +178,8 @@ class CitaController extends Controller
         $horaInicioTs = strtotime($horaInicio);
         $horaFinTs = strtotime($horaFin);
 
-        // Obtener citas existentes
-        $citasExistentes = Cita::where('barbero_id', $barberoId)
+        // Obtener citas existentes - CAMBIADO: barbero_id -> id_barbero
+        $citasExistentes = Cita::where('id_barbero', $barberoId) // CAMBIADO AQUÍ
             ->whereDate('fecha_hora', $fecha)
             ->whereIn('estado', ['pendiente', 'confirmada'])
             ->get()
