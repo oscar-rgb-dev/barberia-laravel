@@ -215,6 +215,10 @@
                         <a href="{{ route('admin.departamentos.create') }}" class="btn btn-outline-dark">
                             <i class="fas fa-building"></i> Nuevo Departamento
                         </a>
+                        <!-- Después de las otras acciones rápidas -->
+                        <a href="{{ route('admin.reportes.form') }}" class="btn btn-outline-danger">
+                            <i class="fas fa-file-pdf"></i> Generar Reporte PDF
+                        </a>
                     </div>
                 </div>
             </div>

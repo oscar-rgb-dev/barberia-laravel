@@ -168,3 +168,12 @@ Route::get('/check-api-routes', function() {
         'route_service_provider' => class_exists('App\Providers\RouteServiceProvider')
     ]);
 });
+
+// En tu archivo de rutas web.php, agrega:
+Route::middleware(['auth'])->group(function () {
+    // ... otras rutas ...
+    
+    // Reportes
+    Route::get('/admin/reportes', [AdminController::class, 'mostrarReporteForm'])->name('admin.reportes.form');
+    Route::post('/admin/reportes/generar', [AdminController::class, 'generarReportePDF'])->name('admin.reportes.generar');
+});
