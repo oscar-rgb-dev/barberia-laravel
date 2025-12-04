@@ -165,13 +165,12 @@ Route::get('/test', function () {
     ]);
 });
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/citas', [CitaController::class, 'index']);
-    Route::post('/citas', [CitaController::class, 'store']);
-    Route::get('/citas/{id}', [CitaController::class, 'show']);
-    Route::put('/citas/{id}', [CitaController::class, 'update']);
-    Route::delete('/citas/{id}', [CitaController::class, 'destroy']);
-});
+// RUTAS DE CITAS (sin sanctum, acepta user_id en body)
+Route::get('/citas', [CitaController::class, 'index']);
+Route::post('/citas', [CitaController::class, 'store']);
+Route::get('/citas/{id}', [CitaController::class, 'show']);
+Route::put('/citas/{id}', [CitaController::class, 'update']);
+Route::delete('/citas/{id}', [CitaController::class, 'destroy']);
 
 // RUTAS PÚBLICAS (sin autenticación) para obtener información
 Route::get('/servicios', function () {

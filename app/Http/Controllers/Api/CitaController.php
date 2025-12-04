@@ -64,9 +64,9 @@ class CitaController extends Controller
         $validator = Validator::make($request->all(), [
             'user_id' => 'required|integer|exists:users,id',
             'servicio_id' => 'required|exists:servicios,id',
-            'barbero_id' => 'required|exists:empleados,id',
-            'fecha' => 'required|date', // Android envía fecha
-            'hora' => 'required|date_format:H:i', // Android envía hora
+            'barbero_id' => 'required|exists:empleados,id', // Añadir esto
+            'fecha' => 'required|date',
+            'hora' => 'required|date_format:H:i',
             'notas' => 'nullable|string|max:500',
         ]);
 
@@ -77,10 +77,10 @@ class CitaController extends Controller
             ], 422);
         }
 
-        // Combinar fecha y hora para la BD
+        // Combinar fecha y hora
         $fechaHora = $request->fecha . ' ' . $request->hora . ':00';
 
-        // Verificar si ya existe una cita en ese horario para el mismo barbero
+        // Verificar disponibilidad
         $citaExistente = Cita::where('fecha_hora', $fechaHora)
                             ->where('barbero_id', $request->barbero_id)
                             ->where('estado', '!=', 'cancelada')
@@ -89,14 +89,12 @@ class CitaController extends Controller
         if ($citaExistente) {
             return response()->json([
                 'success' => false,
-                'message' => 'Este horario ya está reservado para este barbero. Por favor, elige otro.'
+                'message' => 'Este horario ya está reservado para este barbero.'
             ], 409);
         }
 
-        // Obtener servicio para calcular costo
         $servicio = Servicio::find($request->servicio_id);
 
-        // Crear la cita
         $cita = Cita::create([
             'user_id' => $request->user_id,
             'servicio_id' => $request->servicio_id,
@@ -107,26 +105,12 @@ class CitaController extends Controller
             'total' => $servicio->costo,
         ]);
 
-        // Devolver datos formateados para Android
         return response()->json([
             'success' => true,
-            'data' => [
-                'id' => $cita->id,
-                'servicio_id' => $cita->servicio_id,
-                'servicio_nombre' => $servicio->nombre,
-                'barbero_id' => $cita->barbero_id,
-                'barbero_nombre' => Empleado::find($cita->barbero_id)->nombre ?? 'N/A',
-                'fecha' => $request->fecha,
-                'hora' => $request->hora,
-                'fecha_hora' => $fechaHora,
-                'estado' => $cita->estado,
-                'notas' => $cita->notas,
-                'total' => $cita->total
-            ],
+            'data' => $cita,
             'message' => 'Cita creada exitosamente'
         ], 201);
     }
-
     /**
      * Obtener horarios disponibles (PARA ANDROID)
      */
