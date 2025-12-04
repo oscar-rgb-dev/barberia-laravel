@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\CitaController;
 
 // Ruta de prueba GET
 Route::get('/', function () {
@@ -162,4 +163,39 @@ Route::get('/test', function () {
         'message' => 'API funcionando para Android',
         'timestamp' => now()
     ]);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/citas', [CitaController::class, 'index']);
+    Route::post('/citas', [CitaController::class, 'store']);
+    Route::get('/citas/{id}', [CitaController::class, 'show']);
+    Route::put('/citas/{id}', [CitaController::class, 'update']);
+    Route::delete('/citas/{id}', [CitaController::class, 'destroy']);
+});
+
+// RUTAS PÚBLICAS (sin autenticación) para obtener información
+Route::get('/servicios', function () {
+    $servicios = \App\Models\Servicio::all();
+    return response()->json([
+        'success' => true,
+        'data' => $servicios
+    ]);
+});
+
+Route::get('/barberos', function () {
+    $barberos = \App\Models\Empleado::with('jornada')->get();
+    return response()->json([
+        'success' => true,
+        'data' => $barberos
+    ]);
+});
+
+Route::get('/horarios-disponibles/{barbero_id}/{fecha}', function ($barbero_id, $fecha) {
+    $controller = new \App\Http\Controllers\CitaController();
+    $request = new \Illuminate\Http\Request([
+        'barbero_id' => $barbero_id,
+        'fecha' => $fecha
+    ]);
+    
+    return $controller->horariosDisponibles($request);
 });
