@@ -280,3 +280,15 @@ Route::prefix('api')->group(function () {
         ], 201);
     });
 });
+
+Route::get('/api-test/super-simple', function() {
+    return response()->json(['message' => 'Funciona al 100%']);
+});
+
+Route::post('/api-test/register-simple', function(Illuminate\Http\Request $request) {
+    return response()->json([
+        'success' => true,
+        'message' => 'Registro simulado',
+        'data' => $request->all()
+    ]);
+});
