@@ -11,7 +11,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Model implements AuthenticatableContract
 {   
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens;
     use Notifiable, Authenticatable;
 
     protected $table = 'users';
