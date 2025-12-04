@@ -18,6 +18,7 @@ use App\Http\Controllers\JornadaController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BarberoController; // <-- Asegúrate de tener esta
 use App\Http\Controllers\BarberoCitaController;
+use Illuminate\Http\Request; // <-- AÑADE ESTA LÍNEA
 
 // Ruta principal
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -135,7 +136,61 @@ Route::middleware(['auth', 'admin'])->group(function () {
 });
 
 // API Routes
-Route::apiResource('clientes', ClienteController::class);
+// ====================================================
+// API COMPLETA PARA APP ANDROID
+// ====================================================
+
 Route::prefix('api')->group(function () {
-    require base_path('routes/api.php');
+    
+    // Health Check
+    Route::get('/', function () {
+        return response()->json([
+            'app' => 'Barberia API',
+            'version' => '1.0',
+            'status' => 'online',
+            'endpoints' => [
+                'POST /api/register' => 'Registrar usuario',
+                'POST /api/login' => 'Iniciar sesión',
+                'POST /api/logout' => 'Cerrar sesión (token)',
+                'GET /api/citas' => 'Ver mis citas (token)',
+                'POST /api/citas' => 'Crear cita (token)',
+                'GET /api/citas/{id}' => 'Ver cita específica (token)',
+                'PUT /api/citas/{id}' => 'Actualizar cita (token)',
+                'DELETE /api/citas/{id}' => 'Cancelar cita (token)',
+                'GET /api/servicios' => 'Ver servicios disponibles',
+                'GET /api/productos' => 'Ver productos',
+                'GET /api/clientes' => 'Ver clientes (admin)'
+            ]
+        ]);
+    });
+    
+    // AUTH ROUTES
+    Route::post('/register', [App\Http\Controllers\Api\AuthController::class, 'register']);
+    Route::post('/login', [App\Http\Controllers\Api\AuthController::class, 'login']);
+    
+    // PUBLIC ROUTES
+    Route::get('/servicios', [App\Http\Controllers\Api\ServicioController::class, 'index']);
+    Route::get('/servicios/{id}', [App\Http\Controllers\Api\ServicioController::class, 'show']);
+    Route::get('/productos', [App\Http\Controllers\Api\ProductoController::class, 'index']);
+    Route::get('/productos/{id}', [App\Http\Controllers\Api\ProductoController::class, 'show']);
+    
+    // PROTECTED ROUTES (con token)
+    Route::middleware('auth:sanctum')->group(function () {
+        // Auth
+        Route::post('/logout', [App\Http\Controllers\Api\AuthController::class, 'logout']);
+        
+        // Citas
+        Route::apiResource('citas', App\Http\Controllers\Api\CitaController::class);
+        
+        // Clientes (solo admin)
+        Route::apiResource('clientes', App\Http\Controllers\Api\ClienteController::class);
+        
+        // User profile
+        Route::get('/user', function (Request $request) {
+            return response()->json([
+                'success' => true,
+                'user' => $request->user()
+            ]);
+        });
+    });
 });
